@@ -120,3 +120,4 @@ if __name__ == "__main__":
     # STEP 3: Final comprehensive evaluation
     # tests all characters across all batches
     master.test_all()
+
