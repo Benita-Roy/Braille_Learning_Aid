@@ -6,4 +6,5 @@ BATCHES = [
     list("uvwxyz")
 ]
 
-print(BATCHES[0])
+
+#print(BATCHES[0])
