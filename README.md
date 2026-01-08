@@ -48,7 +48,7 @@ The system operates in three major phases:
 
 ```text
 .
-├── main_modified.py        # Main control flow (teaching + adaptive testing)
+├── main.py        # Main control flow (teaching + adaptive testing)
 ├── adaptive_algo.py        # Weighted adaptive character selection logic
 ├── data.py                 # Database schema & progress management
 ├── batches.py              # Character batch definitions (A–Z)
