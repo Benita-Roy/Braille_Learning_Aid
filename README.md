@@ -20,39 +20,6 @@ The goal is to create a learning system that adapts to the learner’s progress 
 
 ---
 
-# System Architecture
-
-```
-                +-------------------+
-                |      main.py      |
-                |   learning flow   |
-                +---------+---------+
-                          |
-        +-----------------+------------------+
-        |                                    |
-+-------v--------+                    +-------v--------+
-| character      |                    | speech         |
-| generator      |                    | recognition    |
-|                |                    | speech.py      |
-+-------+--------+                    +-------+--------+
-        |                                     |
-        |                                     |
-+-------v--------+                    +-------v--------+
-| audio feedback |                    | adaptive algo  |
-| audioTest.py   |                    | adaptive_algo  |
-+-------+--------+                    +-------+--------+
-        |                                     |
-        +----------------+--------------------+
-                         |
-                 +-------v--------+
-                 | SQLite Database|
-                 | learning.db    |
-                 | data.py        |
-                 +----------------+
-```
-
----
-
 # Learning Flow
 
 ## Teaching Phase
