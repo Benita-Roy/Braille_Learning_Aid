@@ -53,29 +53,25 @@ def initialize_database():
     # ---------------------------
     # Default student
     # ---------------------------
-    student_id = "student_001"
-    student_name = "Default Student"
-
-    cursor.execute("""
-    INSERT OR IGNORE INTO students (student_id, name)
-    VALUES (?, ?)
-    """, (student_id, student_name))
-
     # ---------------------------
-    # Initialize A–Z for progress + stats
-    # ---------------------------
-    characters = [(student_id, char) for char in string.ascii_lowercase]
+# Ensure every student has A–Z entries
+# ---------------------------
+    cursor.execute("SELECT student_id FROM students")
+    students = cursor.fetchall()
 
-    cursor.executemany("""
+    for (student_id,) in students:
+    
+        characters = [(student_id, char) for char in string.ascii_lowercase]
+
+        cursor.executemany("""
     INSERT OR IGNORE INTO character_progress (student_id, character)
     VALUES (?, ?)
     """, characters)
 
-    cursor.executemany("""
+        cursor.executemany("""
     INSERT OR IGNORE INTO character_stats (student_id, character)
     VALUES (?, ?)
     """, characters)
-
     conn.commit()
     conn.close()
 
@@ -266,10 +262,10 @@ def view_schema():
 
 
 #i initialised this in the main_modified file just in case ig thats the right way, do remember to maybe delete the learning.db file while actually running the pgm for evaluation
-initialize_database()
-view_students()
-view_character_progress()
-view_character_stats()
+#initialize_database()
+#view_students()
+#view_character_progress()
+#view_character_stats()
 
 
-view_schema()
+#view_schema()
