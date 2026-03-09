@@ -7,13 +7,13 @@ from speech import predict_letter_from_mic
 from audioTest import feedback_sound, teach_char_sound
 import data
 import adaptive_algo as adapt
+
 #import master_test as master
 
 
 ############ FOR NOW THE ONLY STUDENT IS STUDENT_001 ##################
 #--------------------------------------------------------------------#
 
-student_id = 'student_001'
 
 
 # -------------------------------
@@ -107,9 +107,10 @@ def visited_batch(student_id, batch):
 # -------------------------------
 # MAIN PROGRAM FLOW
 # -------------------------------
-if __name__ == "__main__":
+def running_main(student_id):
     
     data.initialize_database()
+
     # iterate through predefined character batches
     for batch in BATCHES:
 
