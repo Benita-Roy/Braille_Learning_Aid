@@ -4,13 +4,15 @@ import keyboard
 import time
 
 #CONNECTING WITH ARDUINO
-ser = serial.Serial('COM5', 9600, timeout=1)
+ser = serial.Serial('COM7', 9600, timeout=1)
 time.sleep(2)
 
 #FUNCTION TO SEND DATA TO UNO
 def char_display_uno(char_to_display):
     char_display_array = char_dic[char_to_display]
     ser.write(bytes(char_display_array))
+    print("\n\n")
+    print(char_to_display, char_display_array)
 
 
 #DICTIONARY FOR CHARACTERS
@@ -20,3 +22,4 @@ char_dic = {
     "o" : [1,0,1,0,1,0],"p" : [1,1,1,1,0,0],"q" : [1,1,1,1,1,0],"r" : [1,1,1,0,1,0],"s" : [0,1,1,1,0,0],"t" : [0,1,1,1,1,0],"u" : [1,0,1,0,0,1],
     "v" : [1,1,1,0,0,1],"w" : [0,1,0,1,1,1],"x" : [1,0,1,1,0,1],"y" : [1,0,1,1,1,1],"z" : [1,0,1,0,1,1]
     }
+
