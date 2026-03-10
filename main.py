@@ -59,10 +59,11 @@ def test(student_id, character):
     # user input and char prediction
     letter, confidence = predict_letter_from_mic()
     print(letter.upper(), confidence)
+    print("\n")
 
     
     check = feedback_sound(character, letter)
-    print(check)
+    #print(check)
     
     if check:
         # student answered correctly
@@ -114,17 +115,17 @@ def running_main(student_id):
     # iterate through predefined character batches
     for batch in BATCHES:
 
-        print("inside main pgm")
+        #print("inside main pgm")
         # STEP 1: Teaching phase
         # teach only characters that have never been visited
         if not visited_batch(student_id, batch):
-            print("calling teach batch inside main pgm")
+            #print("calling teach batch inside main pgm")
             teach_batch(student_id, batch)
 
         # STEP 2: Adaptive practice phase
         # adaptive algorithm controls which character is tested next
         while not mastery_batch(student_id, batch):
-            print("adaptive tesing inside main")
+            #print("adaptive tesing inside main")
             char_to_test = adapt.wtd_random_select(student_id, batch)
             test(student_id, char_to_test)
 
