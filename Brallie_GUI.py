@@ -2,17 +2,15 @@ import streamlit as st
 import sqlite3
 import main
 
-# ---------------------------------
-# GLOBAL VARIABLE (imported by main)
-# ---------------------------------
-student_id = None
-
 
 # ---------------------------------
-# SESSION STATE
+# SESSION STATE INITIALIZATION
 # ---------------------------------
 if "student_id" not in st.session_state:
     st.session_state.student_id = None
+
+if "session_started" not in st.session_state:
+    st.session_state.session_started = False
 
 
 # ---------------------------------
@@ -47,9 +45,7 @@ if menu == "Login":
 
         if result:
             st.session_state.student_id = result[0]
-
-            # update global variable
-            student_id = result[0]
+            st.session_state.session_started = True
 
             st.success(f"Welcome {result[1]}")
 
@@ -89,10 +85,17 @@ if menu == "Sign Up":
 
 
 # ---------------------------------
-# STORE CURRENT STUDENT
+# RUN LEARNING SESSION (ONLY ONCE)
 # ---------------------------------
 if st.session_state.student_id:
+
     student_id = st.session_state.student_id
 
     st.sidebar.success(f"Logged in as: {student_id}")
-    main.running_main(student_id)
+
+    if st.session_state.session_started:
+
+        main.running_main(student_id)
+
+        # Prevent Streamlit reruns from restarting the session
+        st.session_state.session_started = False
