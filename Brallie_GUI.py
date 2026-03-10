@@ -1,36 +1,42 @@
 import streamlit as st
 import sqlite3
+import pandas as pd
 import main
 
-
 # ---------------------------------
-# SESSION STATE INITIALIZATION
+# SESSION STATE
 # ---------------------------------
 if "student_id" not in st.session_state:
     st.session_state.student_id = None
 
-if "session_started" not in st.session_state:
-    st.session_state.session_started = False
-
+if "learning_active" not in st.session_state:
+    st.session_state.learning_active = False
 
 # ---------------------------------
 # DATABASE CONNECTION
 # ---------------------------------
-conn = sqlite3.connect("learning.db")
+conn = sqlite3.connect("learning.db", check_same_thread=False)
 cursor = conn.cursor()
 
-
-st.title("Student Login System")
-
-menu = st.sidebar.selectbox("Menu", ["Login", "Sign Up"])
-
+# ---------------------------------
+# PAGE TITLE
+# ---------------------------------
+st.title("Braille Learning System")
 
 # ---------------------------------
-# LOGIN
+# MENU
 # ---------------------------------
-if menu == "Login":
+menu = st.sidebar.selectbox(
+    "Menu",
+    ["Student Login", "Teacher Login", "Sign Up"]
+)
 
-    st.subheader("Login")
+# =====================================================
+# STUDENT LOGIN
+# =====================================================
+if menu == "Student Login":
+
+    st.header("Student Login")
 
     student_id_input = st.text_input("Student ID")
 
@@ -45,25 +51,42 @@ if menu == "Login":
 
         if result:
             st.session_state.student_id = result[0]
-            st.session_state.session_started = True
-
             st.success(f"Welcome {result[1]}")
-
         else:
             st.error("Student ID not found")
 
+# ---------------------------------
+# STUDENT SESSION CONTROL
+# ---------------------------------
+if st.session_state.student_id:
 
-# ---------------------------------
+    student_id = st.session_state.student_id
+    st.sidebar.success(f"Logged in as: {student_id}")
+
+    st.sidebar.markdown("### Student Session Control")
+
+    if st.sidebar.button("Start Learning"):
+        st.session_state.learning_active = True
+
+    if st.sidebar.button("End Session"):
+        st.session_state.learning_active = False
+        st.warning("Learning session ended")
+
+    if st.session_state.learning_active:
+        st.success("Learning Session Running...")
+        main.running_main(student_id)
+
+# =====================================================
 # SIGN UP
-# ---------------------------------
+# =====================================================
 if menu == "Sign Up":
 
-    st.subheader("Create Account")
+    st.header("Create Student Account")
 
     student_id_input = st.text_input("Student ID")
     name = st.text_input("Name")
 
-    if st.button("Sign Up"):
+    if st.button("Create Account"):
 
         cursor.execute(
             "SELECT * FROM students WHERE student_id=?",
@@ -83,19 +106,106 @@ if menu == "Sign Up":
 
             st.success("Signup successful!")
 
+# =====================================================
+# TEACHER DASHBOARD
+# =====================================================
+if menu == "Teacher Login":
 
-# ---------------------------------
-# RUN LEARNING SESSION (ONLY ONCE)
-# ---------------------------------
-if st.session_state.student_id:
+    st.header("Teacher Dashboard")
 
-    student_id = st.session_state.student_id
+    password = st.text_input("Teacher Password", type="password")
 
-    st.sidebar.success(f"Logged in as: {student_id}")
+    if password == "teacher123":
 
-    if st.session_state.session_started:
+        st.success("Teacher Login Successful")
 
-        main.running_main(student_id)
+        cursor.execute("SELECT student_id, name FROM students")
+        students = cursor.fetchall()
 
-        # Prevent Streamlit reruns from restarting the session
-        st.session_state.session_started = False
+        if len(students) == 0:
+            st.warning("No students found in database")
+
+        else:
+
+            student_list = [f"{s[0]} - {s[1]}" for s in students]
+
+            selected = st.selectbox(
+                "Select Student",
+                student_list
+            )
+
+            student_id = selected.split(" - ")[0]
+
+            # ---------------------------------
+            # CHARACTER PERFORMANCE
+            # ---------------------------------
+            st.subheader("Character Performance")
+
+            query = """
+            SELECT character, correct_count, incorrect_count
+            FROM character_stats
+            WHERE student_id = ?
+            """
+
+            df = pd.read_sql_query(query, conn, params=(student_id,))
+
+            if not df.empty:
+                df_plot = df.set_index("character")
+                st.bar_chart(df_plot)
+
+            # ---------------------------------
+            # MASTERY GRAPH
+            # ---------------------------------
+            st.subheader("Mastery Score")
+
+            query = """
+            SELECT character, mastery, visited
+            FROM character_progress
+            WHERE student_id = ?
+            """
+
+            mastery_df = pd.read_sql_query(query, conn, params=(student_id,))
+
+            if not mastery_df.empty:
+
+                mastery_df = mastery_df.set_index("character")
+
+                st.line_chart(mastery_df[["mastery"]])
+
+            # ---------------------------------
+            # OVERALL PERFORMANCE
+            # ---------------------------------
+            st.subheader("Overall Performance")
+
+            total_correct = df["correct_count"].sum()
+            total_incorrect = df["incorrect_count"].sum()
+
+            overall_df = pd.DataFrame(
+                {
+                    "Result": ["Correct", "Incorrect"],
+                    "Count": [total_correct, total_incorrect],
+                }
+            )
+
+            st.bar_chart(overall_df.set_index("Result"))
+
+            # ---------------------------------
+            # WEAK CHARACTERS
+            # ---------------------------------
+            st.subheader("Characters Student Struggles With")
+
+            weak = mastery_df[
+                (mastery_df["mastery"] < 0.7) &
+                (mastery_df["visited"] == 1)
+            ]
+
+            weak_display = weak.drop(columns=["visited"])
+
+            if weak_display.empty:
+                st.success("Student has no weak characters")
+            else:
+                st.dataframe(weak_display, use_container_width=True)
+
+    else:
+        if password:
+            st.error("Incorrect Teacher Password")
